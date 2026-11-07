@@ -1,22 +1,24 @@
 require('dotenv').config();
-const mysql = require('mysql2');
+const { Pool } = require('pg');
 
-// Conexão com o MySQL
-const db = mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    port: process.env.DB_PORT
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : undefined,
+  max: 10,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 10000,
 });
 
-// Testa a conexão
-db.connect((err) => {
-    if (err) {
-        console.error('❌ Erro ao conectar no banco:', err.message);
-        return;
-    }
-    console.log('✅ Conectado ao MySQL com sucesso!');
-});
+pool.on('error', (error) => console.error('Erro inesperado no pool PostgreSQL:', error.message));
 
-module.exports = db;
+async function initializeDatabase() {
+  await pool.query(`CREATE TABLE IF NOT EXISTS tasks (
+    id BIGSERIAL PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    status VARCHAR(30) NOT NULL DEFAULT 'backlog',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  )`);
+  await pool.query('ALTER TABLE tasks ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()');
+}
+
+module.exports = { pool, initializeDatabase };
