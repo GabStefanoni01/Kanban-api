@@ -1,20 +1,67 @@
 # Kanban API
 
-**Kanban API** é uma API RESTful para gerenciar tarefas em um sistema de Kanban, facilitando a organização e acompanhamento de projetos. A API permite criar, editar, mover e excluir tarefas entre diferentes colunas como "Backlog", "Em Progresso" e "Concluído", promovendo uma maneira ágil e eficiente de gerenciar fluxos de trabalho.
-
-## Funcionalidades
-
-- **Criação de Tarefas**: Crie tarefas com título, descrição, prazo e prioridade.
-- **Movimentação de Tarefas**: Mova tarefas entre as colunas do Kanban (Backlog, Em Progresso, Concluído).
-- **Filtragem de Tarefas**: Filtre as tarefas por status, prazo e prioridade para melhor gestão.
-- **Edição de Tarefas**: Atualize as informações das tarefas conforme necessário.
-- **Exclusão de Tarefas**: Exclua tarefas que não são mais necessárias ou que foram concluídas.
+API REST para gerenciamento de tarefas em um quadro Kanban, construída com Node.js, Express e PostgreSQL.
 
 ## Tecnologias
+- Node.js 20+
+- Express
+- PostgreSQL com `pg` (node-postgres)
+- dotenv
 
-- **Node.js** – Ambiente de execução JavaScript.
-- **Express.js** – Framework para construção de APIs.
-- **MySQL** – Banco de dados relacional para armazenamento de tarefas.
-- **Sequelize** – ORM (Object Relational Mapping) para MySQL.
-- **Jest/Mocha** – Frameworks de testes automatizados.
+## Funcionalidades
+- Listar tarefas e filtrar por status.
+- Criar tarefas.
+- Mover tarefas entre colunas.
+- Excluir tarefas.
+- Verificar a saúde da aplicação e a conexão com o banco.
 
+## Status aceitos
+- `backlog`
+- `in-progress`
+- `done`
+
+## Executar localmente
+Entre na pasta `kanban-api`, instale as dependências com `npm install` e crie um arquivo `.env`:
+
+```env
+DATABASE_URL=postgresql://USUARIO:SENHA@HOST/SEU_BANCO?sslmode=require
+NODE_ENV=development
+PORT=3000
+```
+
+Inicie com `npm run dev`. A tabela `tasks` e a coluna `created_at` são criadas/garantidas automaticamente na inicialização.
+
+## Endpoints
+| Método | Rota | Descrição |
+|---|---|---|
+| GET | `/health` | Saúde da aplicação |
+| GET | `/ready` | Verifica conexão com PostgreSQL |
+| GET | `/tasks` | Lista todas as tarefas |
+| GET | `/tasks?status=backlog` | Filtra por status |
+| POST | `/tasks` | Cria uma tarefa |
+| PUT | `/tasks/:id` | Atualiza o status |
+| DELETE | `/tasks/:id` | Exclui uma tarefa |
+
+### Exemplo de criação
+```json
+{
+  "title": "Implementar autenticação",
+  "status": "backlog"
+}
+```
+
+## Deploy no Render
+Crie um Web Service conectado a este repositório e configure:
+- Root Directory: `kanban-api`
+- Runtime: Node
+- Build Command: `npm install`
+- Start Command: `npm start`
+
+Variáveis de ambiente:
+- `DATABASE_URL`: connection string PostgreSQL do Neon com SSL.
+- `NODE_ENV`: `production`
+
+O Render fornece `PORT` automaticamente. Depois do deploy, valide `/health` e `/ready` no domínio do serviço.
+
+## Segurança
+Não versione arquivos `.env`, senhas ou strings de conexão. Configure credenciais exclusivamente nas variáveis de ambiente do Render.
